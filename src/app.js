@@ -1,30 +1,29 @@
 import express from 'express';
+import conectaNaDatabase from './config/dbconnect.js';
+import livro from './models/Livro.js';
+
+
+
+const conexao = await conectaNaDatabase();
+
+conexao.on("error", (erro) => {
+    console.error("Erro na conexão com o banco de dados: ", erro);
+})
+
+conexao.once("open", () => {
+    console.log("Conexão com o banco de dados estabelecida com sucesso!")
+})
 
 const app = express();
 app.use(express.json()); // aqui foi usado o express.json() para que o Express possa entender e processar os dados enviados no corpo da requisição em formato JSON. Sem isso, o Express não seria capaz de interpretar corretamente os dados enviados pelo cliente, e a propriedade req.body estaria vazia ou indefinida. Com express.json(), o Express pode analisar o corpo da requisição e disponibilizar os dados como um objeto JavaScript acessível através de req.body.  
 
-const livros = [
-    {
-        id: 1, 
-        titulo: 'O Senhor dos Anéis',
-    },
-    {
-        id: 2, 
-        titulo: 'O Hobbit',
-    }
-]
-function buscaLivro(id) {
-    return livros.findIndex(livro => {
-        return livro.id === Number(id);
-    })
-}
-// o '/' é a rota raiz, ou seja, a página inicial do site
 app.get("/", (req, res) => {
     res.status(200).send("Curso de node.js")
 })
 
-app.get("/livros", (req, res) => {
-    res.status(200).json(livros); // aqui foi usado json por que o array de livros é um objeto, e o json é um formato de dados que pode ser facilmente convertido em objetos JavaScript
+app.get("/livros", async (req, res) => {
+    const listaLivros = await livro.find({})
+    res.status(200).json(listaLivros);
 })
 
 app.get("/livros/:id", (req, res) => { // o : foi usado para indicar que o id é um parâmetro de rota, ou seja, um valor dinâmico que pode ser diferente para cada requisição. Quando um cliente faz uma requisição para a rota "/livros/1", por exemplo, o valor "1" será capturado como o parâmetro id e estará disponível em req.params.id. Isso permite que o servidor processe a requisição de forma dinâmica, respondendo com o livro correspondente ao id fornecido na URL.
@@ -51,3 +50,5 @@ app.delete("/livros/:id", (req, res) => {
 });
 
 export default app;
+
+//mongodb+srv://danielmaxzika_db_user:<db_password>@cluster0.4vwnymy.mongodb.net/?appName=Cluster0
